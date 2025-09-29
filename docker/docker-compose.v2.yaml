@@ -1,0 +1,57 @@
+services:
+  retriever:
+    image: your-registry/your-retriever:latest
+    restart: always
+    environment:
+      PORT: ${RETRIEVER_PORT:-7001}
+      LOG_LEVEL: ${RETRIEVER_LOG_LEVEL:-info}
+      RERANKER_BASE_URL: ${RERANKER_BASE_URL:-}
+      RERANKER_API_KEY: ${RERANKER_API_KEY:-}
+      VECTOR_DB_URL: ${RETRIEVER_VECTOR_DB_URL:-}
+      BM25_BACKEND_URL: ${RETRIEVER_BM25_URL:-}
+      IMAGE_EMBEDDING_MODEL: ${RETRIEVER_IMAGE_EMBEDDING_MODEL:-}
+      OCR_BASE_URL: ${OCR_BASE_URL:-http://ocr:${PPOCR_PORT:-8504}}
+    ports:
+      - "${EXPOSE_RETRIEVER_PORT:-7001}:${RETRIEVER_PORT:-7001}"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:${RETRIEVER_PORT:-7001}/healthz >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      ocr:
+        condition: service_healthy
+
+  ocr:
+    build:
+      context: ./paddleocr
+    image: dify-ppocr:latest
+    restart: always
+    environment:
+      PPOCR_LANG: ${PPOCR_LANG:-ch}
+      PPOCR_MODEL_VERSION: ${PPOCR_MODEL_VERSION:-PP-OCRv4}
+      PPOCR_USE_GPU: ${PPOCR_USE_GPU:-false}
+      SERVICE_PORT: ${PPOCR_PORT:-8504}
+    ports:
+      - "${EXPOSE_PPOCR_PORT:-8504}:${PPOCR_PORT:-8504}"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:${PPOCR_PORT:-8504}/healthz >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  api:
+    environment:
+      RETRIEVER_BASE_URL: ${RETRIEVER_BASE_URL:-http://retriever:${RETRIEVER_PORT:-7001}}
+      RETRIEVER_API_KEY: ${RETRIEVER_API_KEY:-}
+    depends_on:
+      retriever:
+        condition: service_started
+
+  worker:
+    environment:
+      RETRIEVER_BASE_URL: ${RETRIEVER_BASE_URL:-http://retriever:${RETRIEVER_PORT:-7001}}
+      RETRIEVER_API_KEY: ${RETRIEVER_API_KEY:-}
+    depends_on:
+      retriever:
+        condition: service_started
