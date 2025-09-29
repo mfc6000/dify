@@ -127,6 +127,34 @@ Star Dify on GitHub and be instantly notified of new releases.
 
 ![star-us](https://github.com/langgenius/dify/assets/13230914/b823edc1-6388-4e25-ad45-2f6b187adbb4)
 
+## Hybrid Retrieval + OCR (Optional)
+
+If you want Dify to orchestrate conversations while delegating document parsing, hybrid retrieval, and OCR to your own microservices, you can layer an additional Docker Compose override on top of the default stack.
+
+- Copy `docker/.env.example` to `.env` if you have not already, then append the variables required by the retriever and OCR services:
+  - `RETRIEVER_BASE_URL=http://retriever:7001`
+  - `RETRIEVER_PORT=7001`
+  - `PPOCR_PORT=8504`
+  - `OCR_BASE_URL=http://ocr:8504`
+  - Add your cloud credentials such as `ALI_EMB_API_KEY`, `ALI_EMB_IMAGE_MODEL`, `ALI_RERANK_MODEL`, etc., when calling external embedding or rerank APIs.
+- Build the PP-OCRv4 slim image (this pulls models ahead of time to keep startup fast):
+
+  ```bash
+  docker compose -f docker/docker-compose.yaml -f docker/docker-compose.v2.yaml build ocr
+  ```
+
+- Start the extended stack with the override file; you can enable extra backends (for example OpenSearch) via profiles:
+
+  ```bash
+  docker compose \
+    -f docker/docker-compose.yaml \
+    -f docker/docker-compose.v2.yaml \
+    --profile opensearch \
+    up -d retriever ocr opensearch
+  ```
+
+- After the services are healthy, create an HTTP Tool inside Dify that calls your retriever's `/search` endpoint. Dify will perform orchestration and LLM responses, while the retriever combines BM25, vector search, multi-modal signals, and RBAC filtering.
+
 ## Advanced Setup
 
 If you need to customize the configuration, please refer to the comments in our [.env.example](docker/.env.example) file and update the corresponding values in your `.env` file. Additionally, you might need to make adjustments to the `docker-compose.yaml` file itself, such as changing image versions, port mappings, or volume mounts, based on your specific deployment environment and requirements. After making any changes, please re-run `docker-compose up -d`. You can find the full list of available environment variables [here](https://docs.dify.ai/getting-started/install-self-hosted/environments).
