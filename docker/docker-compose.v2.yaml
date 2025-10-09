@@ -1,6 +1,8 @@
 services:
   retriever:
-    image: your-registry/your-retriever:latest
+    build:
+      context: ./retriever
+    image: dify-retriever:latest
     restart: always
     environment:
       PORT: ${RETRIEVER_PORT:-7001}
