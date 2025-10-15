@@ -41,6 +41,28 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    networks:
+      - ssrf_proxy_network
+      - default
+
+# === 新增：LibreOffice 无头转换服务（doc/ppt/xls → pdf），并把页图渲染到共享卷 ===
+  doc2pdf:
+    build:
+      context: ./doc2pdf         # 确保此目录存在 Dockerfile 与 app/main.py
+      dockerfile: Dockerfile
+    image: local/doc2pdf:1.0.0
+    container_name: doc2pdf
+    restart: unless-stopped
+    #ports:
+    #  - "${EXPOSE_DOC2PDF_PORT:-8001}:8000"   # 仅容器内互访可移除
+    environment:
+      LOCALE: ${DOC2PDF_LOCALE:-zh_CN.UTF-8}
+      STATIC_MOUNT_DIR: /shared/ocr_pages     # 你的服务代码里把这个目录挂为静态
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
   api:
     environment:

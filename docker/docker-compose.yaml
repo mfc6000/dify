@@ -744,7 +744,10 @@ services:
 
   # The DifySandbox
   sandbox:
-    image: langgenius/dify-sandbox:0.2.12
+    build:
+        context: ./sandbox-with-fitz
+        dockerfile: Dockerfile
+    image: dify-sandbox-with-fitz
     restart: always
     environment:
       # The DifySandbox configurations

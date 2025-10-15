@@ -14,6 +14,11 @@ server {
       include proxy.conf;
     }
 
+    location = /api/health {
+      proxy_pass http://api:5001/health;
+      include proxy.conf;
+    }
+
     location /v1 {
       proxy_pass http://api:5001;
       include proxy.conf;

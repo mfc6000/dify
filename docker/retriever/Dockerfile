@@ -10,10 +10,10 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY docker/retriever/requirements.txt ./requirements.txt
+COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY docker/retriever/app ./app
+COPY app ./app
 
 ENV PORT=7001 \
     LOG_LEVEL=info

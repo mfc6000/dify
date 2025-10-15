@@ -1,0 +1,11 @@
+
+fastapi==0.115.0
+uvicorn==0.30.6
+pydantic==2.9.2
+# FlagEmbedding pulls transformers; [torch] installs a CPU torch by default.
+# For GPU, install the correct torch first from PyTorch index, then pip install -r this file.
+FlagEmbedding[torch]==1.2.10
+numpy==1.26.4
+weaviate-client==4.7.1
+orjson==3.10.7
+python-multipart==0.0.9

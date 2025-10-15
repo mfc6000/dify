@@ -20,11 +20,11 @@ RUN apt-get update \
 WORKDIR /app
 
 # 先安装依赖（能命中 pip 缓存层）
-COPY docker/paddleocr/requirements.txt ./requirements.txt
+COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制应用代码
-COPY docker/paddleocr/app ./app
+COPY app ./app
 
 # ---- Runtime env ----
 ARG PPOCR_LANG=ch

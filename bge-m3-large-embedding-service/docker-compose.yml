@@ -1,0 +1,41 @@
+
+services:
+  embed:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.cpu
+    ports:
+      - "8200:8200"
+    environment:
+      - MODEL_NAME=BAAI/bge-m3-large
+      - DEVICE=cpu
+      - MAX_LENGTH=512
+      - BATCH_SIZE=32
+      - RETURN_SPARSE=false
+      # - API_KEY=changeme
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4g
+
+  # Uncomment to use GPU build/run (requires --gpus all support)
+  # embed-gpu:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Dockerfile.gpu
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - capabilities: ["gpu"]
+  #   runtime: nvidia
+  #   environment:
+  #     - MODEL_NAME=BAAI/bge-m3-large
+  #     - DEVICE=cuda
+  #     - MAX_LENGTH=512
+  #     - BATCH_SIZE=64
+  #     - RETURN_SPARSE=false
+  #     # - API_KEY=changeme
+  #   ports:
+  #     - "8200:8200"

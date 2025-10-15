@@ -16,6 +16,15 @@ Welcome to the new `docker` directory for deploying Dify using Docker Compose. T
 
 - **Mandatory .env File**: A `.env` file is now required to run `docker compose up`. This file is crucial for configuring your deployment and for any custom settings to persist through upgrades.
 
+### Branch Enhancements (`new-flow`)
+
+- **`docker-compose.v2.yaml` 新增 doc2pdf 服务**：`doc2pdf` 基于 `docker/doc2pdf/` 自建镜像，接收 Office 文档并调用 LibreOffice 无头模式转成 PDF，同步覆盖健康检查与可选环境变量（`DOC2PDF_LOCALE`、`STATIC_MOUNT_DIR`）。适配 `unstructured`/自定义流程时，可直接消费服务返回的 PDF 流。
+- **OCR 服务能力扩展**：`docker/paddleocr/app/main.py` 增加 `/upload` 上传接口与 `local_file` 读取支持，可将图片写入共享卷后通过 `/ocr` 直接读取；支持 `STATIC_MOUNT_DIR`/`STATIC_URL_PREFIX` 将页面截图静态托管；容器同时加入 `ssrf_proxy_network` 以便与内部代理互通。
+- **自定义 Sandbox 镜像**：`docker/docker-compose.yaml` 的 `sandbox` 服务改为从 `docker/sandbox-with-fitz/` 构建，额外安装 `pymupdf` 以支撑 PDF 解析能力，镜像名统一为 `dify-sandbox-with-fitz`。
+- **Retriever/OCR Dockerfile 调整**：`docker/retriever/Dockerfile` 与 `docker/paddleocr/Dockerfile` 改用构建上下文中的相对路径，避免嵌套 `docker/<service>` 前缀，便于后续扩展。
+- **Nginx 直连健康检查**：`docker/nginx/conf.d/default.conf.template` 新增 `/api/health` 转发，方便外部探针无鉴权探活。
+- **启动命令建议**：使用 `docker compose -f docker/docker-compose.yaml -f docker/docker-compose.v2.yaml --profile opensearch --profile unstructured --profile weaviate up -d` 一次性启用基础服务、扩展向量库以及 doc2pdf/OCR 增强栈。
+
 ### How to Deploy Dify with `docker-compose.yaml`
 
 1. **Prerequisites**: Ensure Docker and Docker Compose are installed on your system.
